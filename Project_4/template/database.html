@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supply Chain Management - Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 800px; margin: 50px auto; text-align: center; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border: 1px solid #ddd; }
+        th { background-color: #f4f4f4; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Messages</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Content</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="message-list">
+                <!-- Messages will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function loadMessages() {
+            const token = localStorage.getItem("token");
+            const response = await fetch("/messages/", {
+                method: "GET",
+                headers: { "Authorization": "Bearer " + token }
+            });
+
+            if (response.ok) {
+                const messages = await response.json();
+                const messageList = document.getElementById("message-list");
+                messageList.innerHTML = "";
+
+                messages.forEach(message => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${message.id}</td>
+                        <td>${message.content}</td>
+                        <td>${message.is_read ? "Read" : "Unread"}</td>
+                    `;
+                    messageList.appendChild(row);
+                });
+            } else {
+                document.getElementById("error").textContent = "Error loading messages!";
+            }
+        }
+
+        loadMessages();
+    </script>
+</body>
+</html>
