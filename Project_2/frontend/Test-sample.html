@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Chat Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+        }
+        .chat-container {
+            width: 80%;
+            max-width: 600px;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        .message-box {
+            height: 300px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 5px;
+        }
+        .message.user1 {
+            background-color: #d1f0d1;
+            align-self: flex-end;
+        }
+        .message.user2 {
+            background-color: #f0d1d1;
+            align-self: flex-start;
+        }
+        .message.unread {
+            font-weight: bold;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+        }
+        .input-group input {
+            flex: 1;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .input-group button {
+            padding: 8px 16px;
+            margin-left: 8px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .input-group button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Real-Time Chat Application</h1>
+    <div class="chat-container">
+        <div class="message-box" id="message-box"></div>
+        <div class="input-group">
+            <input type="text" id="message-input" placeholder="Type a message..." />
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+
+    <script>
+        let socket;
+
+        async function fetchToken() {
+            const response = await fetch('/token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'username': 'user1',
+                    'password': 'password1'
+                })
+            });
+            const data = await response.json();
+            return data.access_token;
+        }
+
+        async function connectWebSocket() {
+            const token = await fetchToken();
+            socket = new WebSocket(`ws://localhost:8000/ws/user2?token=${token}`);
+
+            socket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                const messageBox = document.getElementById('message-box');
+                const messageElement = document.createElement('div');
+                messageElement.className = `message ${data.sender} ${data.unread ? 'unread' : ''}`;
+                messageElement.textContent = `${data.sender}: ${data.content}`;
+                messageBox.appendChild(messageElement);
+                messageBox.scrollTop = messageBox.scrollHeight; // Auto-scroll to the bottom
+            };
+        }
+
+        document.getElementById('send-button').addEventListener('click', async function() {
+            const messageInput = document.getElementById('message-input');
+            const message = {
+                sender: 'user1',
+                receiver: 'user2',
+                content: messageInput.value,
+                timestamp: new Date().toISOString(),
+            };
+
+            const token = await fetchToken();
+
+            fetch('/send-message/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(message)
+            });
+
+            messageInput.value = ''; // Clear the input
+        });
+
+        connectWebSocket();
+    </script>
+</body>
+</html>
