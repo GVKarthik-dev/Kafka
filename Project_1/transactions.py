@@ -1,13 +1,17 @@
+import os
 import json
 from kafka import KafkaProducer
 from kafka import KafkaConsumer
+from dotenv import load_dotenv
 
-KAFKA_ORDER_TOPIC = 'order_details'
-KAFKA_CONFIRMED_TOPIC = 'order_confirmed'
+load_dotenv()
 
-Consumer = KafkaConsumer(KAFKA_ORDER_TOPIC,bootstrap_servers='localhost:29092')
+ORDER_TOPIC = os.getenv('ORDER_TOPIC')
+CONFIRMED_TOPIC = os.getenv('CONFIRMED_TOPIC')
 
-Producer = KafkaProducer(bootstrap_servers='localhost:29092')
+Consumer = KafkaConsumer(ORDER_TOPIC,bootstrap_servers='localhost:9092')
+
+Producer = KafkaProducer(bootstrap_servers='localhost:9092')
 
 print('Going to Listen for orders ....')
 
@@ -16,7 +20,7 @@ while True:
         order = json.loads(message.value.decode())
         print(order)
         
-        user_id = order['User_id']
+        user_id = order['User_name']
         total = order['Total_count']
         
         data = {
@@ -26,6 +30,6 @@ while True:
         }
         print('Sucessfull Transection ....')
         Producer.send(
-            KAFKA_CONFIRMED_TOPIC,
+            CONFIRMED_TOPIC,
             json.dumps(data).encode('utf-8')
         )

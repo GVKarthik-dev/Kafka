@@ -1,12 +1,16 @@
+import os
 import json
 from kafka import KafkaProducer
 from kafka import KafkaConsumer
+from dotenv import load_dotenv
 
-KAFKA_CONFIRMED_TOPIC = 'order_confirmed'
+load_dotenv()
+
+CONFIRMED_TOPIC = os.getenv('CONFIRMED_TOPIC')
 
 Consumer = KafkaConsumer(
-    KAFKA_CONFIRMED_TOPIC,
-    bootstrap_servers='localhost:29092'
+    CONFIRMED_TOPIC,
+    bootstrap_servers='localhost:9092'
     )
 
 TOTAL_NUMBER_ORDERS = 0
