@@ -1,6 +1,23 @@
-This is a project based on food ordering system
+# Kafka Food Ordering System with FastAPI
 
-1. first we need to run the `orders.py` file
-2. After that we need `transactions.py` file
-3. Late we need to run `analytics.py` and `email.py` files
+This project is a FastAPI-based system that leverages Kafka to simulate a food ordering system. The application generates food orders, processes them via Kafka, and sends notifications while maintaining analytics.
 
+## Project Structure
+
+```bash
+kafka_fastapi_project/
+│
+├── app/
+│   ├── main.py
+│   ├── orders.py
+│   ├── transactions.py
+│   ├── analytics.py
+│   └── email.py
+└── .env
+```
+
+# Kafka Food Ordering System with FastAPI
+
+![System Diagram](./pic/Diagram.svg)
+
+This project is a FastAPI-based system that leverages Kafka to simulate a food ordering system...
