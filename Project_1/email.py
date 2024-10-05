@@ -1,6 +1,6 @@
 import os
 import json
-from kafka import KafkaProducer
+from fastapi import APIRouter, BackgroundTasks
 from kafka import KafkaConsumer
 from dotenv import load_dotenv
 
@@ -8,23 +8,23 @@ load_dotenv()
 
 CONFIRMED_TOPIC = os.getenv('CONFIRMED_TOPIC')
 
-Consumer = KafkaConsumer(
-    CONFIRMED_TOPIC,
-    bootstrap_servers='localhost:9092'
-    )
+router = APIRouter()
 
-# Producer = KafkaProducer(bootstrap_servers='localhost:29092')
-
-print('Going to Email users about their order ....')
+consumer = KafkaConsumer(CONFIRMED_TOPIC, bootstrap_servers='localhost:9092')
 
 email_sent_tillnow = set()
 
-while True:
-    for message in Consumer:
-        details = json.loads(message.value.decode())
-        print(details)
-        
-        email  = details['Customer_email']
-        print(f'sent a mail to {email}')
-        email_sent_tillnow.add(email)
-        print(f'Till now we have sent {len(email_sent_tillnow)} emails till now')
+def send_emails():
+    print('Listening for email sending...')
+    while True:
+        for message in consumer:
+            details = json.loads(message.value.decode())
+            email = details['Customer_email']
+            print(f'Sent a mail to {email}')
+            email_sent_tillnow.add(email)
+            print(f'Total emails sent: {len(email_sent_tillnow)}')
+
+@router.post("/send-emails")
+async def send_emails_route(background_tasks: BackgroundTasks):
+    background_tasks.add_task(send_emails)
+    return {"message": "Started sending emails in the background"}
