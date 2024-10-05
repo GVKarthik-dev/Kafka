@@ -1,3 +1,5 @@
+[commands](commands.md)
+
 Here's a funnier version of your README with more emojis to add a playful touch:
 
 # Kafka Projects with Python
